@@ -1,0 +1,134 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./effects.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    --background: theme(colors.stone.950);
+    --foreground: theme(colors.stone.100);
+
+    --primary: theme(colors.stone.200);
+    --primary-foreground: theme(colors.stone.900);
+
+    --support: theme(colors.stone.800);
+    --support-foreground: theme(colors.stone.100);
+
+    --surface: theme(colors.stone.900);
+    --surface-foreground: theme(colors.stone.100);
+
+    --muted: theme(colors.stone.800);
+    --muted-foreground: theme(colors.stone.400);
+
+    --popover: theme(colors.stone.900);
+    --popover-foreground: theme(colors.stone.100);
+
+    --popcorn: theme(colors.stone.800);
+    --popcorn-foreground: theme(colors.stone.100);
+
+    --input: oklch(1 0 0 / 15%);
+    --border: oklch(1 0 0 / 10%);
+    --focus: theme(colors.stone.100);
+}
+
+@theme {
+    /* 
+    --text-xs: 1rem;
+    --text-sm: 1.125rem;
+    --text-base: 1.25rem;
+    --text-lg: 1.5rem;
+    --text-xl: 1.875rem;
+    */
+
+    --animate-shine: shine var(--duration) infinite linear;
+    @keyframes shine {
+        0% {
+            background-position: 0% 0%;
+        }
+        50% {
+            background-position: 100% 100%;
+        }
+        to {
+            background-position: 0% 0%;
+        }
+    }
+}
+
+@theme inline {
+    --font-head: var(--ff-body);
+    --font-body: var(--ff-body);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-card: var(--surface);
+    --color-card-foreground: var(--surface-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-secondary: var(--support);
+    --color-secondary-foreground: var(--support-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--popcorn-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-ring: var(--focus);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    html {
+        @apply font-sans;
+        line-height: 1;
+    }
+    body {
+        background: var(--background);
+        color: var(--foreground);
+        font-size: var(--text-base);
+        font-family: var(--font-body), monospace;
+        line-height: 1;
+        font-weight: 600;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-head), monospace;
+    }
+
+    p {
+        color: var(--muted-foreground);
+        @apply text-pretty!;
+    }
+
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+}
+
+/*  */
+@utility no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+
+    &::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, and Opera */
+    }
+}

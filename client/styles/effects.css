@@ -1,0 +1,91 @@
+/**
+ * Effect keyframes only.
+ * The --animate-* variables live in globals.css's @theme.
+ */
+
+@keyframes vhs-scanlines {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 0 4px;
+    }
+}
+
+@keyframes vhs-flicker {
+    0%,
+    100% {
+        opacity: 0.35;
+    }
+    40% {
+        opacity: 0.12;
+    }
+    70% {
+        opacity: 0.4;
+    }
+}
+
+@keyframes film-flicker {
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.18;
+    }
+}
+
+/* Runs on the media wrapper. Filters live in public/effects/rgb-split.svg. */
+@keyframes glitch-rgb {
+    0%,
+    100% {
+        filter: none;
+        transform: translate(0, 0);
+    }
+    15% {
+        filter: url(/effects/rgb-split.svg#rgb-a);
+        transform: translate(-2px, 1px);
+    }
+    30% {
+        filter: url(/effects/rgb-split.svg#rgb-b);
+        transform: translate(2px, -1px);
+    }
+    45% {
+        filter: url(/effects/rgb-split.svg#rgb-c);
+        transform: translate(0, 0);
+    }
+    60% {
+        filter: none;
+        transform: translate(0, 0);
+    }
+}
+
+/* A bright band that jumps down the frame, like a tracking tear. */
+@keyframes glitch-tear {
+    0%,
+    60%,
+    100% {
+        opacity: 0;
+        transform: translateY(0);
+    }
+    62% {
+        opacity: 1;
+        transform: translateY(150%);
+    }
+    70% {
+        opacity: 1;
+        transform: translateY(500%) translateX(-4px);
+    }
+    78% {
+        opacity: 0;
+        transform: translateY(700%);
+    }
+}
+
+/* Keep the static look (grading, vignette) but stop all motion. */
+@media (prefers-reduced-motion: reduce) {
+    .effect-overlay,
+    .effect-overlay * {
+        animation: none !important;
+    }
+}

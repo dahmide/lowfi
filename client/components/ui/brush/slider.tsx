@@ -1,0 +1,181 @@
+"use client";
+
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type InputHTMLAttributes,
+} from "react";
+import { useRough } from "@/components/ui/brush/use-rough";
+import {
+  resolveRoughVars,
+  stableSeed,
+  type CrumbleColorProps,
+  type CrumbleTheme,
+} from "@/components/ui/brush/rough";
+import { cn } from "@/lib/cn";
+
+export interface SliderProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type">,
+    CrumbleColorProps {
+  formatValue?: (value: number) => string;
+  label?: string;
+  showValue?: boolean;
+  theme?: CrumbleTheme;
+}
+
+const TRACK_HEIGHT = 6;
+const THUMB_SIZE = 20;
+
+export function Slider({
+  className,
+  defaultValue,
+  fill,
+  formatValue,
+  id,
+  label,
+  max = 100,
+  min = 0,
+  onChange,
+  showValue = true,
+  stroke,
+  strokeMuted,
+  theme: themeProp,
+  value,
+  ...props
+}: SliderProps) {
+  const [current, setCurrent] = useState(Number(value ?? defaultValue ?? min));
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const trackSvgRef = useRef<SVGSVGElement>(null);
+  const thumbSvgRef = useRef<SVGSVGElement>(null);
+  const sliderId =
+    id ?? `slider-${label?.toLowerCase().replace(/\s+/g, "-") ?? "field"}`;
+  const pct = (current - Number(min)) / (Number(max) - Number(min));
+  const roughStyle = resolveRoughVars({ stroke, strokeMuted, fill });
+  const { drawLine, theme } = useRough({
+    stableId: sliderId,
+    svgRef: trackSvgRef,
+    theme: themeProp,
+    variant: "border",
+  });
+  const { drawCircle } = useRough({
+    stableId: `${sliderId}-thumb`,
+    svgRef: thumbSvgRef,
+    theme: themeProp,
+    variant: "interactive",
+  });
+
+  const drawAll = useCallback(() => {
+    const thumbSvg = thumbSvgRef.current;
+    const trackSvg = trackSvgRef.current;
+    const wrapper = wrapperRef.current;
+
+    if (!thumbSvg || !trackSvg || !wrapper) return;
+
+    const width = wrapper.offsetWidth;
+    const trackHeight = TRACK_HEIGHT + 4;
+
+    trackSvg.replaceChildren();
+    trackSvg.setAttribute("width", String(width));
+    trackSvg.setAttribute("height", String(trackHeight));
+    trackSvg.setAttribute("viewBox", `0 0 ${width} ${trackHeight}`);
+
+    const baseStrokeWidth = TRACK_HEIGHT;
+    const track = drawLine(0, TRACK_HEIGHT / 2 + 2, width, TRACK_HEIGHT / 2 + 2, {
+      seed: stableSeed(`${sliderId}-track`),
+      stroke: "hsl(var(--border))",
+      strokeWidth: baseStrokeWidth,
+    });
+    if (track) trackSvg.appendChild(track);
+
+    if (pct > 0) {
+      const fillLine = drawLine(
+        0,
+        TRACK_HEIGHT / 2 + 2,
+        width * pct,
+        TRACK_HEIGHT / 2 + 2,
+        {
+          seed: stableSeed(`${sliderId}-fill`),
+          stroke: "var(--cr-stroke)",
+          strokeWidth: baseStrokeWidth,
+        },
+      );
+      if (fillLine) trackSvg.appendChild(fillLine);
+    }
+
+    thumbSvg.replaceChildren();
+    const thumb = drawCircle(THUMB_SIZE / 2, THUMB_SIZE / 2, THUMB_SIZE - 2, {
+      fill: "hsl(var(--background))",
+      fillStyle: "solid",
+      stroke: "var(--cr-stroke)",
+    });
+    if (thumb) thumbSvg.appendChild(thumb);
+  }, [drawCircle, drawLine, pct, sliderId]);
+
+  useEffect(() => {
+    drawAll();
+  }, [drawAll]);
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const observer = new ResizeObserver(() => drawAll());
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, [drawAll]);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setCurrent(Number(event.target.value));
+    onChange?.(event);
+  };
+
+  return (
+    <div className={cn("flex flex-col gap-2", className)} style={roughStyle}>
+      {label || showValue ? (
+        <div className="flex justify-between">
+          {label ? (
+            <label
+              htmlFor={sliderId}
+              className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground"
+            >
+              {label}
+            </label>
+          ) : null}
+          {showValue ? (
+            <span className="text-[13px] tabular-nums text-muted-foreground">
+              {formatValue ? formatValue(current) : String(current)}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      <div ref={wrapperRef} className="relative flex h-6 items-center">
+        <svg
+          ref={trackSvgRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 overflow-visible"
+        />
+        <svg
+          ref={thumbSvgRef}
+          aria-hidden="true"
+          height={THUMB_SIZE}
+          width={THUMB_SIZE}
+          className="pointer-events-none absolute overflow-visible"
+          style={{ left: `calc(${pct * 100}% - ${THUMB_SIZE / 2}px)` }}
+        />
+        <input
+          id={sliderId}
+          max={max}
+          min={min}
+          onChange={handleChange}
+          className="absolute inset-0 m-0 w-full cursor-pointer opacity-0"
+          type="range"
+          value={current}
+          {...props}
+        />
+      </div>
+    </div>
+  );
+}
